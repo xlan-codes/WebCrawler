@@ -8,8 +8,10 @@ from typing import Optional
 from easyprocess import EasyProcessError
 from selenium import webdriver
 from pyvirtualdisplay import Display
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
 
 from crawler.robots import Robots
 
@@ -55,7 +57,21 @@ class Browser:
         self.browser.quit()
 
     def screenshot(self, file: str):
-        self.browser.save_screenshot(filename=file)
+        # From: https://stackoverflow.com/a/52572919/6828099
+        original_size = self.browser.get_window_size()
+        required_width = self.browser.execute_script('return document.body.parentNode.scrollWidth')
+        required_height = self.browser.execute_script('return document.body.parentNode.scrollHeight')
+
+        try:
+            self.browser.set_window_size(required_width, required_height)
+
+            body: WebElement = self.browser.find_element_by_tag_name('body')
+            body.screenshot(filename=file)
+
+            self.browser.set_window_size(original_size['width'], original_size['height'])
+        except NoSuchElementException as e:
+            print("Failed To Find Body!!!")
+            self.browser.save_screenshot(filename=file)
 
     def get(self, url: str) -> bool:
         if self.robots.can_crawl(url=url):

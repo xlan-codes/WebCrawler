@@ -22,7 +22,7 @@ if __name__ == "__main__":
     browser.setup_browser()
     browser.start_browser()
 
-    successful = browser.get(url="https://example.com/")
+    successful = browser.get(url="https://sqa.stackexchange.com/questions/35338/fetch-all-the-links-on-a-page-that-are-within-the-same-class")
 
     if successful:
         browser.screenshot(file=screenshot_file)
