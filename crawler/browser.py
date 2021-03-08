@@ -24,11 +24,13 @@ class Browser:
         self.robots: Robots = Robots()
         self.script_timeout: int = 40  # 40 Seconds
         self.page_timeout: int = 20  # 20 Seconds
+        self.width: int = 1920
+        self.height: int = 1080
 
     def setup_browser(self):
         # Start Headless Display
         try:
-            self.display = Display(visible=False, size=(800, 600))
+            self.display = Display(visible=False, size=(self.width, self.height))
             self.display.start()
         except EasyProcessError as e:
             self.headless: bool = True
@@ -45,7 +47,7 @@ class Browser:
 
     def start_browser(self):
         self.browser = webdriver.Chrome(executable_path='chromedriver', options=self.options)
-        self.browser.set_window_size(width=1920, height=1080)
+        self.browser.set_window_size(width=self.width, height=self.height)
         self.browser.set_page_load_timeout(time_to_wait=self.page_timeout)
         self.browser.set_script_timeout(time_to_wait=self.script_timeout)
 
