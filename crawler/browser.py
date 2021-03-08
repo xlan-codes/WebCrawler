@@ -3,7 +3,7 @@
 # Bot Testing Site
 # https://bot.sannysoft.com/
 
-from typing import Optional
+from typing import Optional, List
 
 from easyprocess import EasyProcessError
 from selenium import webdriver
@@ -55,6 +55,18 @@ class Browser:
 
     def quit(self):
         self.browser.quit()
+
+    def retrieve_feeds(self) -> List[WebElement]:
+        # TODO: Add Support For Feeds and Sitemaps
+        # <link rel="alternate" type="application/rss+xml" href="http://www.example.com/rssfeed.xml" />
+        # <link rel="alternate" type="application/atom+xml" href="http://www.example.com/blog/wp-atom.php" />
+        return self.browser.find_elements_by_tag_name(name="a")
+
+    def retrieve_links(self) -> List[WebElement]:
+        return self.browser.find_elements_by_tag_name(name="a")
+
+    def retrieve_code(self) -> str:
+        return self.browser.page_source
 
     def screenshot(self, file: str):
         # From: https://stackoverflow.com/a/52572919/6828099
