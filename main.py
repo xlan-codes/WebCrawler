@@ -38,18 +38,47 @@ if __name__ == "__main__":
 
     if successful:
         try:
-            browser.screenshot(file=screenshot_file)
+            feeds: dict = browser.retrieve_feeds()
+
+            rss: List[WebElement] = feeds["rss"]
+            atom: List[WebElement] = feeds["atom"]
+
+            if len(rss) > 0:
+                print(f"Found {len(rss)} RSS Feed(s)")
+
+                for feed in rss:
+                    href: Optional[str] = feed.get_attribute(name="href")
+
+                    if href is not None:
+                        print(href)
+
+            if len(atom) > 0:
+                print(f"Found {len(atom)} Atom Feed(s)")
+
+                for feed in atom:
+                    href: Optional[str] = feed.get_attribute(name="href")
+
+                    if href is not None:
+                        print(href)
         except TimeoutException as e:
-            print(f"Screenshot Page Timed Out: {url}")
+            print(f"Feed Retrieval Timed Out: {url}")
 
-        links: List[WebElement] = browser.retrieve_links()
-        if len(links) > 0:
-            print(f"Found {len(links)} Link(s)")
+        # try:
+        #     browser.screenshot(file=screenshot_file)
+        # except TimeoutException as e:
+        #     print(f"Screenshot Page Timed Out: {url}")
 
-            for link in links:
-                href: Optional[str] = link.get_attribute(name="href")
-
-                if href is not None:
-                    print(href)
+        # try:
+        #     links: List[WebElement] = browser.retrieve_links()
+        #     if len(links) > 0:
+        #         print(f"Found {len(links)} Link(s)")
+        #
+        #         for link in links:
+        #             href: Optional[str] = link.get_attribute(name="href")
+        #
+        #             if href is not None:
+        #                 print(href)
+        # except TimeoutException as e:
+        #     print(f"Link Retrieval Timed Out: {url}")
 
     browser.quit()
