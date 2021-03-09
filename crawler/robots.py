@@ -1,7 +1,8 @@
 #!/bin/python3
 
+from typing import Optional, List
 from urllib.parse import urlparse, ParseResult
-from urllib.robotparser import RobotFileParser
+from urllib.robotparser import RobotFileParser, RequestRate
 
 import time
 
@@ -12,7 +13,7 @@ class Robots:
         self.parsers: dict = {}
         self.max_age: int = 60 * 60  # 1 Hour
 
-    def can_crawl(self, url: str) -> bool:
+    def get_parser(self, url: str) -> Optional[RobotFileParser]:
         result: ParseResult = urlparse(url=url)
 
         # Determine Hostname If Possible
@@ -22,7 +23,7 @@ class Robots:
 
         # Failed To Get Hostname, So Return False
         if hostname == "":
-            return False
+            return None
 
         # Determine If URL Has Scheme
         scheme: str = "http://"  # Default To HTTP For 302 Redirect
@@ -52,4 +53,22 @@ class Robots:
             self.parsers[site_key].set_url(robots)
             self.parsers[site_key].read()
 
-        return self.parsers[site_key].can_fetch(self.user_agent, url=url)
+        return self.parsers[site_key]
+
+    def can_crawl(self, url: str) -> bool:
+        parser: Optional[RobotFileParser] = self.get_parser(url=url)
+
+        if parser is None:
+            return False
+
+        return parser.can_fetch(self.user_agent, url=url)
+
+    def get_crawl_rate(self, url: str) -> Optional[RequestRate]:
+        parser: Optional[RobotFileParser] = self.get_parser(url=url)
+
+        return parser.request_rate(self.user_agent)
+
+    def get_sitemaps(self, url: str) -> Optional[List[str]]:
+        parser: Optional[RobotFileParser] = self.get_parser(url=url)
+
+        return parser.site_maps()
