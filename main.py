@@ -7,14 +7,23 @@ from selenium.webdriver.remote.webelement import WebElement
 from crawler.browser import Browser
 
 import os
+import pickle
 
+# Directories
 working_dir: str = "working"
+pickle_dir: str = os.path.join(working_dir, "pickles")
+
+# Files
 screenshot_file: str = os.path.join(working_dir, "webpage.png")
+robots_pickle: str = os.path.join(pickle_dir, "robots.pickle")
 
 
 def setup():
     if not os.path.exists(working_dir):
         os.mkdir(working_dir)
+
+    if not os.path.exists(pickle_dir):
+        os.mkdir(pickle_dir)
 
 
 if __name__ == "__main__":
@@ -25,10 +34,15 @@ if __name__ == "__main__":
 
     # Start Browser
     browser: Browser = Browser()
+
+    # Load Robots Class If Pickled
+    if os.path.exists(robots_pickle):
+        browser.robots = pickle.load(open(robots_pickle, mode='rb'))
+
     browser.setup_browser()
     browser.start_browser()
 
-    url: str = "https://foxnews.com/"
+    url: str = "https://www.dolthub.com/bounties"
     successful: bool = False
 
     try:
@@ -63,22 +77,24 @@ if __name__ == "__main__":
         except TimeoutException as e:
             print(f"Feed Retrieval Timed Out: {url}")
 
-        # try:
-        #     browser.screenshot(file=screenshot_file)
-        # except TimeoutException as e:
-        #     print(f"Screenshot Page Timed Out: {url}")
+        try:
+            browser.screenshot(file=screenshot_file)
+        except TimeoutException as e:
+            print(f"Screenshot Page Timed Out: {url}")
 
-        # try:
-        #     links: List[WebElement] = browser.retrieve_links()
-        #     if len(links) > 0:
-        #         print(f"Found {len(links)} Link(s)")
-        #
-        #         for link in links:
-        #             href: Optional[str] = link.get_attribute(name="href")
-        #
-        #             if href is not None:
-        #                 print(href)
-        # except TimeoutException as e:
-        #     print(f"Link Retrieval Timed Out: {url}")
+        try:
+            links: List[WebElement] = browser.retrieve_links()
+            if len(links) > 0:
+                print(f"Found {len(links)} Link(s)")
+
+                for link in links:
+                    href: Optional[str] = link.get_attribute(name="href")
+
+                    if href is not None:
+                        print(href)
+        except TimeoutException as e:
+            print(f"Link Retrieval Timed Out: {url}")
 
     browser.quit()
+    pickle.dump(browser.robots, open(robots_pickle, mode="wb+"))
+

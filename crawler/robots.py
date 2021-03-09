@@ -16,7 +16,7 @@ class Robots:
         self.parsers: dict = {}
         self.crawl_time: dict = {}
         self.max_age: int = 60 * 60  # 1 Hour
-        self.default_rate: RequestRate = RequestRate[2, 1]  # One Request Every Half A Second (2 Requests Per Second)
+        self.default_rate: RequestRate = RequestRate(2, 1)  # One Request Every Half A Second (2 Requests Per Second)
 
     def get_site_key(self, url: str) -> Optional[str]:
         result: ParseResult = urlparse(url=url)
