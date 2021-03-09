@@ -2,7 +2,6 @@
 
 # Bot Testing Site
 # https://bot.sannysoft.com/
-
 from typing import Optional, List
 
 from easyprocess import EasyProcessError
@@ -89,7 +88,11 @@ class Browser:
             self.browser.save_screenshot(filename=file)
 
     def get(self, url: str) -> bool:
-        if self.robots.can_crawl(url=url):
+        if self.robots.can_crawl(url=url) and not self.robots.hit_rate_limit(url=url):
+            # Get Page
             self.browser.get(url=url)
+
+            # Mark Attempt At Retrieving Page
+            self.robots.set_site_last_crawl(url=url)
             return True
         return False
