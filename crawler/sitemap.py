@@ -3,11 +3,13 @@
 
 import json
 import enum
+
 import requests
 import xmltodict
 
 from requests import Response
 from typing import Union, List, Optional
+from pyexpat import ExpatError
 
 
 def _retrieve_sitemap(url: str) -> Optional[str]:
@@ -18,10 +20,12 @@ def _retrieve_sitemap(url: str) -> Optional[str]:
 
     return None
 
+
 class SitemapType(enum.Enum):
     INDEX = "index"
     GENERAL = "general"
     UNKNOWN = "unknown"
+
 
 class Sitemap:
     def __init__(self, sitemap: Union[str, dict]):
@@ -34,7 +38,11 @@ class Sitemap:
                 print(f"Failed Retrieving Sitemap: {sitemap}")
                 return
 
-            self.sitemap: dict = xmltodict.parse(response)
+            try:
+                self.sitemap: dict = xmltodict.parse(response)
+            except ExpatError as e:
+                # Sitemap is Malformed, So Quit Trying To Parse It
+                self.sitemap: dict = {}
 
     def get_type(self) -> SitemapType:
         if "sitemapindex" in self.sitemap:

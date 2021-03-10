@@ -44,7 +44,7 @@ if __name__ == "__main__":
     browser.setup_browser()
     browser.start_browser()
 
-    url: str = "https://foxnews.com/"
+    url: str = "https://www.oann.com/"
     successful: bool = False
 
     try:
