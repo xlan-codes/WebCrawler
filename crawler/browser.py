@@ -84,11 +84,12 @@ class Browser:
 
             body: WebElement = self.browser.find_element_by_tag_name('body')
             body.screenshot(filename=file)
-
-            self.browser.set_window_size(original_size['width'], original_size['height'])
         except NoSuchElementException as e:
             print("Failed To Find Body!!!")
             self.browser.save_screenshot(filename=file)
+        finally:
+            # To Ensure Size Is Reset Even On Failure Of Finding Body Element
+            self.browser.set_window_size(original_size['width'], original_size['height'])
 
     def can_crawl_now(self, url: str) -> bool:
         return self.robots.can_crawl_now(url=url)
