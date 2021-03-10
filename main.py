@@ -1,4 +1,6 @@
 #!/bin/python3
+# TODO: Add means of checking the last pickle save time and starting a new instance if the pickle is too old
+
 from typing import List, Optional
 
 from selenium.common.exceptions import TimeoutException
