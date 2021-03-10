@@ -95,7 +95,7 @@ class Robots:
 
         if crawls is None and site_key in self.crawl_time:
             # Assuming Adding One Crawl
-            _, crawls = self.crawl_time[site_key]
+            crawls, _ = self.crawl_time[site_key]
             crawls += 1
         elif crawls is None:
             # Assume First Crawl
@@ -135,6 +135,9 @@ class Robots:
             return False
 
         return parser.can_fetch(self.user_agent, url=url)
+
+    def can_crawl_now(self, url: str) -> bool:
+        return self.can_crawl(url=url) and not self.hit_rate_limit(url=url)
 
     def get_crawl_rate(self, url: str) -> Optional[RequestRate]:
         parser: Optional[RobotFileParser] = self.get_parser(url=url)

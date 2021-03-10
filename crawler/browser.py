@@ -67,6 +67,9 @@ class Browser:
     def retrieve_links(self) -> List[WebElement]:
         return self.browser.find_elements_by_tag_name(name="a")
 
+    def retrieve_sitemaps(self, url: str) -> Optional[List[str]]:
+        return self.robots.get_sitemaps(url=url)
+
     def retrieve_code(self) -> str:
         return self.browser.page_source
 
@@ -87,8 +90,11 @@ class Browser:
             print("Failed To Find Body!!!")
             self.browser.save_screenshot(filename=file)
 
+    def can_crawl_now(self, url: str) -> bool:
+        return self.robots.can_crawl_now(url=url)
+
     def get(self, url: str) -> bool:
-        if self.robots.can_crawl(url=url) and not self.robots.hit_rate_limit(url=url):
+        if self.robots.can_crawl_now(url=url):
             # Get Page
             self.browser.get(url=url)
 

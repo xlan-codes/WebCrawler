@@ -5,6 +5,8 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
 
 from crawler.browser import Browser
+from crawler.feed import Feed
+from crawler.sitemap import Sitemap
 
 import os
 import pickle
@@ -42,7 +44,7 @@ if __name__ == "__main__":
     browser.setup_browser()
     browser.start_browser()
 
-    url: str = "https://www.dolthub.com/bounties"
+    url: str = "https://foxnews.com/"
     successful: bool = False
 
     try:
@@ -66,6 +68,11 @@ if __name__ == "__main__":
                     if href is not None:
                         print(href)
 
+                        if browser.can_crawl_now(url=href):
+                            print("RSS Feed Links:")
+                            feed = Feed(feed=href)
+                            print(feed.get_links())
+
             if len(atom) > 0:
                 print(f"Found {len(atom)} Atom Feed(s)")
 
@@ -74,8 +81,29 @@ if __name__ == "__main__":
 
                     if href is not None:
                         print(href)
+
+                        if browser.can_crawl_now(url=href):
+                            print("Atom Feed Links:")
+                            feed = Feed(feed=href)
+                            print(feed.get_links())
         except TimeoutException as e:
             print(f"Feed Retrieval Timed Out: {url}")
+
+        # TODO: Decide If I Should Pull URL Internally
+        sitemaps: Optional[List[str]] = browser.retrieve_sitemaps(url=url)
+
+        if sitemaps is not None and len(sitemaps) > 0:
+            print(f"Found {len(sitemaps)} Sitemap(s)")
+
+            for url in sitemaps:
+                print(url)
+
+                if browser.can_crawl_now(url=url):
+                    sitemap: Sitemap = Sitemap(sitemap=url)
+                    links: List[str] = sitemap.get_links()
+
+                    for link in links:
+                        print(link)
 
         try:
             browser.screenshot(file=screenshot_file)
@@ -97,4 +125,3 @@ if __name__ == "__main__":
 
     browser.quit()
     pickle.dump(browser.robots, open(robots_pickle, mode="wb+"))
-
