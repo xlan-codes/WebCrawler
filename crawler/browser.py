@@ -5,12 +5,13 @@
 from typing import Optional, List
 
 from easyprocess import EasyProcessError
-from selenium import webdriver
+from seleniumwire import webdriver
 from pyvirtualdisplay import Display
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
+from seleniumwire.request import Request
 
 from crawler.robots import Robots
 
@@ -93,6 +94,9 @@ class Browser:
 
     def can_crawl_now(self, url: str) -> bool:
         return self.robots.can_crawl_now(url=url)
+
+    def get_requests(self) -> List[Request]:
+        return self.browser.requests
 
     def get(self, url: str) -> bool:
         if self.robots.can_crawl_now(url=url):

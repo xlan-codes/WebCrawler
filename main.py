@@ -5,6 +5,7 @@ from typing import List, Optional
 
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
+from seleniumwire.request import Request
 
 from crawler.browser import Browser
 from crawler.feed import Feed
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     browser.setup_browser()
     browser.start_browser()
 
-    url: str = "https://www.oann.com/"
+    url: str = "https://example.com"
     successful: bool = False
 
     try:
@@ -55,6 +56,16 @@ if __name__ == "__main__":
         print(f"Retrieving Page Timed Out: {url}")
 
     if successful:
+        network_requests: List[Request] = browser.get_requests()
+
+        # There will always be at least 1 request if successful (which it is if we are here)
+        if len(network_requests) > 1:
+            print(f"Found {len(network_requests)} Network Requests")
+            for request in network_requests:
+                if request.response:
+                    print(f"{request.url} - {request.method} - {request.response.status_code} - {request.response.headers['Content-Type']}")
+                    # print(f"{request.response.body}")  # For Later As Documentation Is Wrong
+
         try:
             feeds: dict = browser.retrieve_feeds()
 
