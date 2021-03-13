@@ -47,7 +47,7 @@ if __name__ == "__main__":
     browser.setup_browser()
     browser.start_browser()
 
-    url: str = "https://example.com"
+    url: str = "https://www.reuters.com/"
     successful: bool = False
 
     try:
