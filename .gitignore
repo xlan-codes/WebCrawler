@@ -2,3 +2,6 @@
 __pycache__
 venv
 working
+
+# For Reasons Unbeknownst to Me, I Cannot Choose The Download Location Of The Undetectable Driver
+chromedriver

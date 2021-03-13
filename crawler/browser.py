@@ -15,6 +15,8 @@ from seleniumwire.request import Request
 
 from crawler.robots import Robots
 
+import os
+
 
 class Browser:
     def __init__(self):
@@ -48,7 +50,17 @@ class Browser:
             self.options.add_argument('--headless')
 
     def start_browser(self):
-        self.browser = webdriver.Chrome(executable_path='chromedriver', options=self.options)
+        undetectable_driver_path: str = "./chromedriver"
+        normal_driver_path: str = "chromedriver"
+
+        if os.path.exists(undetectable_driver_path):
+            # Undetectable Driver
+            driver_path: str = undetectable_driver_path
+        else:
+            # Regular Driver
+            driver_path: str = normal_driver_path
+
+        self.browser = webdriver.Chrome(executable_path=driver_path, options=self.options)
         self.browser.set_window_size(width=self.width, height=self.height)
         self.browser.set_page_load_timeout(time_to_wait=self.page_timeout)
         self.browser.set_script_timeout(time_to_wait=self.script_timeout)
