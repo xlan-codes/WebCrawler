@@ -3,7 +3,8 @@
 
 from typing import List, Optional
 
-from selenium.common.exceptions import TimeoutException
+from requests import Response
+from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
 from selenium.webdriver.remote.webelement import WebElement
 from seleniumwire.request import Request
 
@@ -13,14 +14,63 @@ from crawler.sitemap import Sitemap
 
 import os
 import pickle
+import requests
 
 # Directories
 working_dir: str = "working"
 pickle_dir: str = os.path.join(working_dir, "pickles")
+blocklists_dir: str = os.path.join(working_dir, "blocklists")
+complete_blocklist: str = os.path.join(blocklists_dir, "complete-list.txt")
 
 # Files
 screenshot_file: str = os.path.join(working_dir, "webpage.png")
 robots_pickle: str = os.path.join(pickle_dir, "robots.pickle")
+
+# These lists contain content I don't want in the spider, that includes porn
+# as porn is not what the spider is supposed to be crawling
+blocklists: dict = {
+    "abuse": "https://blocklistproject.github.io/Lists/alt-version/abuse-nl.txt",
+    "ads": "https://blocklistproject.github.io/Lists/alt-version/ads-nl.txt",
+    "drugs": "https://blocklistproject.github.io/Lists/alt-version/drugs-nl.txt",
+    "fraud": "https://blocklistproject.github.io/Lists/alt-version/fraud-nl.txt",
+    "malware": "https://blocklistproject.github.io/Lists/alt-version/malware-nl.txt",
+    "phishing": "https://blocklistproject.github.io/Lists/alt-version/phishing-nl.txt",
+    "piracy": "https://blocklistproject.github.io/Lists/alt-version/piracy-nl.txt",
+    "porn": "https://blocklistproject.github.io/Lists/alt-version/porn-nl.txt",
+    "ransomware": "https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt",
+    "redirect": "https://blocklistproject.github.io/Lists/alt-version/redirect-nl.txt",
+    "scam": "https://blocklistproject.github.io/Lists/alt-version/scam-nl.txt",
+    "tracking": "https://blocklistproject.github.io/Lists/alt-version/tracking-nl.txt"
+}
+
+
+def download_blocklists():
+    # TODO: Write Down Last Download Date To Know When To Update
+    with open(complete_blocklist, mode="w") as clist:
+        for blocklist in blocklists.keys():
+            response: Response = requests.get(url=blocklists[blocklist])
+
+            if response.status_code != 200:
+                continue
+
+            with open(file=os.path.join(blocklists_dir, f"{blocklist}.txt"), mode="w") as f:
+                f.writelines(response.text)
+                f.close()
+
+            total_list: List[str] = [x for x in response.text.split("\n") if not x.startswith("#")]  # Remove Comments
+            total_list: List[str] = [x for x in total_list if not x.strip() == ""]  # Remove Blank Lines
+            total_list: List[str] = [x for x in total_list if "/" not in x]  # Remove Invalid Addresses
+
+            clist.writelines("\n".join(total_list))
+        clist.close()
+
+
+def import_blocklists() -> List[str]:
+    with open(complete_blocklist, mode="r") as blocklist:
+        blocked_domains: List[str] = [x.strip() for x in blocklist.readlines()]
+        blocklist.close()
+
+        return blocked_domains
 
 
 def setup():
@@ -29,6 +79,12 @@ def setup():
 
     if not os.path.exists(pickle_dir):
         os.mkdir(pickle_dir)
+
+    if not os.path.exists(blocklists_dir):
+        os.mkdir(blocklists_dir)
+
+    # TODO: Read TODO In Method!!!
+    # download_blocklists()
 
 
 if __name__ == "__main__":
@@ -43,6 +99,10 @@ if __name__ == "__main__":
     # Load Robots Class If Pickled
     if os.path.exists(robots_pickle):
         browser.robots = pickle.load(open(robots_pickle, mode='rb'))
+
+    # Import BlockLists
+    if os.path.exists(complete_blocklist):
+        browser.blocklist = import_blocklists()
 
     browser.setup_browser()
     browser.start_browser()
@@ -101,6 +161,8 @@ if __name__ == "__main__":
                             print(feed.get_links())
         except TimeoutException as e:
             print(f"Feed Retrieval Timed Out: {url}")
+        except StaleElementReferenceException as e:
+            print(f"Feed Retrieval Failed Due To Page Refresh: {url}")
 
         # TODO: Decide If I Should Pull URL Internally
         sitemaps: Optional[List[str]] = browser.retrieve_sitemaps(url=url)
@@ -122,6 +184,8 @@ if __name__ == "__main__":
             browser.screenshot(file=screenshot_file)
         except TimeoutException as e:
             print(f"Screenshot Page Timed Out: {url}")
+        except StaleElementReferenceException as e:
+            print(f"Screenshot Page Failed Due To Page Refresh: {url}")
 
         try:
             links: List[WebElement] = browser.retrieve_links()
@@ -135,6 +199,8 @@ if __name__ == "__main__":
                         print(href)
         except TimeoutException as e:
             print(f"Link Retrieval Timed Out: {url}")
+        except StaleElementReferenceException as e:
+            print(f"Link Retrieval Failed Due To Page Refresh: {url}")
 
     browser.quit()
     pickle.dump(browser.robots, open(robots_pickle, mode="wb+"))

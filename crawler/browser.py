@@ -33,7 +33,7 @@ class Browser:
         self.height: int = 1080
 
         # Domains To Block
-        self.block_list: List[str] = []
+        self.blocklist: List[str] = []
 
     def setup_browser(self):
         # Start Headless Display
@@ -146,7 +146,7 @@ class Browser:
         # Deny Request General Method
         # I May Add More Advanced Blocking Patterns Later - Potentially To Match AdblockPlus
         # For Now, We Just Block At The Domain Level
-        if urlparse(url=url).hostname in self.block_list:
+        if urlparse(url=url).hostname in self.blocklist:
             return True
 
         return False
